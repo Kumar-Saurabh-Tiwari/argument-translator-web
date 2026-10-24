@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowDownUp, AudioLines, Globe2, Radio, Sparkles, X } from "lucide-react";
+import type { RealtimeChannel } from "@supabase/supabase-js";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -12,8 +13,26 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { formatMockTranslation } from "@/lib/live-translation";
+import { supabase } from "@/lib/supabase";
 
 const languages = ["English", "Hindi", "Spanish", "Japanese"];
+
+type Speaker = "User A" | "User B";
+type ConnectionStatus = "connecting" | "connected" | "error";
+
+function isTypingPayload(payload: unknown): payload is { sender: Speaker; text: string } {
+  if (
+    typeof payload !== "object" ||
+    payload === null ||
+    !("sender" in payload) ||
+    !("text" in payload)
+  ) {
+    return false;
+  }
+
+  const { sender, text } = payload;
+  return (sender === "User A" || sender === "User B") && typeof text === "string";
+}
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -138,6 +157,102 @@ function Index() {
   const [languageB, setLanguageB] = useState("Spanish");
   const [draftA, setDraftA] = useState("");
   const [draftB, setDraftB] = useState("");
+  const [incomingForA, setIncomingForA] = useState("");
+  const [incomingForB, setIncomingForB] = useState("");
+  const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>("connecting");
+  const channelRef = useRef<RealtimeChannel | null>(null);
+  const channelReadyRef = useRef(false);
+  const pendingTypingRef = useRef(new Map<Speaker, string>());
+
+  const sendTyping = useCallback(
+    (channel: RealtimeChannel, sender: Speaker, text: string) => {
+      console.info(`[Supabase Realtime] Sending typing update from ${sender} (${text.length} characters)`);
+      void channel
+        .send({ type: "broadcast", event: "typing", payload: { sender, text } })
+        .then((result) => {
+          if (result !== "ok") {
+            console.error(`[Supabase Realtime] Typing broadcast was not acknowledged: ${result}`);
+            setConnectionStatus("error");
+            return;
+          }
+
+          console.info(`[Supabase Realtime] Typing broadcast acknowledged for ${sender}`);
+        })
+        .catch((error: unknown) => {
+          console.error("[Supabase Realtime] Typing broadcast failed:", error);
+          setConnectionStatus("error");
+        });
+    },
+    [],
+  );
+
+  useEffect(() => {
+    const pendingTyping = pendingTypingRef.current;
+    const channel = supabase.channel("argument-room", {
+      config: { broadcast: { self: true, ack: true } },
+    });
+    channelRef.current = channel;
+    console.info("[Supabase Realtime] Connecting to channel: argument-room");
+
+    channel
+      .on("broadcast", { event: "typing" }, ({ payload }) => {
+        if (!isTypingPayload(payload)) {
+          console.error("Received an invalid typing broadcast payload.");
+          return;
+        }
+
+        console.info(
+          `[Supabase Realtime] Received typing update from ${payload.sender} (${payload.text.length} characters)`,
+        );
+        const preview = formatMockTranslation(payload.text);
+        if (payload.sender === "User A") {
+          setIncomingForB(preview);
+        } else {
+          setIncomingForA(preview);
+        }
+      })
+      .subscribe((status, error) => {
+        console.info(`[Supabase Realtime] Channel status: ${status}`);
+        if (status === "SUBSCRIBED") {
+          channelReadyRef.current = true;
+          setConnectionStatus("connected");
+          console.info("[Supabase Realtime] Connected and subscribed to argument-room");
+
+          for (const [sender, text] of pendingTyping) {
+            sendTyping(channel, sender, text);
+          }
+          pendingTyping.clear();
+          return;
+        }
+
+        if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+          channelReadyRef.current = false;
+          setConnectionStatus("error");
+          console.error(`[Supabase Realtime] Subscription failed: ${status}`, error);
+        } else if (status === "CLOSED") {
+          channelReadyRef.current = false;
+          setConnectionStatus("connecting");
+        }
+      });
+
+    return () => {
+      channelReadyRef.current = false;
+      channelRef.current = null;
+      pendingTyping.clear();
+      console.info("[Supabase Realtime] Removing channel: argument-room");
+      void supabase.removeChannel(channel);
+    };
+  }, [sendTyping]);
+
+  const broadcastTyping = (sender: Speaker, text: string) => {
+    const channel = channelRef.current;
+    if (!channel || !channelReadyRef.current) {
+      pendingTypingRef.current.set(sender, text);
+      return;
+    }
+
+    sendTyping(channel, sender, text);
+  };
 
   const swapLanguages = () => {
     setLanguageA(languageB);
@@ -158,7 +273,13 @@ function Index() {
           <div className="flex items-center gap-3">
             <div className="room-status flex items-center gap-2 rounded-full border border-border/70 px-3 py-2 text-xs text-muted-foreground">
               <span className="status-dot" />
-              <span>LOCAL PREVIEW</span>
+              <span aria-live="polite">
+                {connectionStatus === "connected"
+                  ? "LIVE BROADCAST"
+                  : connectionStatus === "error"
+                    ? "CONNECTION ERROR"
+                    : "CONNECTING…"}
+              </span>
             </div>
             <Button variant="outline" size="icon" aria-label="Swap languages" title="Swap languages" onClick={swapLanguages} className="size-10 rounded-full border-border/80 bg-background/50">
               <ArrowDownUp className="size-4" />
@@ -191,31 +312,37 @@ function Index() {
         <div className="conversation-grid grid flex-1 grid-cols-1 overflow-hidden rounded-2xl border border-border/80 bg-card/50 shadow-conversation md:grid-cols-2">
           <SpeakerPanel
             side="a"
-            name="You"
+            name="User A"
             initials="A"
             language={languageA}
-            incomingFrom="Speaker B"
-            incomingText={formatMockTranslation(draftB)}
+            incomingFrom="User B"
+            incomingText={incomingForA}
             draft={draftA}
             onLanguageChange={setLanguageA}
-            onDraftChange={setDraftA}
+            onDraftChange={(text) => {
+              setDraftA(text);
+              broadcastTyping("User A", text);
+            }}
           />
           <SpeakerPanel
             side="b"
-            name="Speaker B"
+            name="User B"
             initials="B"
             language={languageB}
-            incomingFrom="You"
-            incomingText={formatMockTranslation(draftA)}
+            incomingFrom="User A"
+            incomingText={incomingForB}
             draft={draftB}
             onLanguageChange={setLanguageB}
-            onDraftChange={setDraftB}
+            onDraftChange={(text) => {
+              setDraftB(text);
+              broadcastTyping("User B", text);
+            }}
           />
         </div>
 
         <footer className="flex flex-wrap items-center justify-between gap-2 px-1 pt-4 text-[11px] text-muted-foreground/80">
           <span>Both sides are ready.</span>
-          <span>Prototype · no messages are sent</span>
+          <span>Typing is shared live, not saved · translations are simulated</span>
         </footer>
       </div>
     </main>
