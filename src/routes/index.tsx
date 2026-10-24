@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowDownUp, AudioLines, Globe2, Radio, Sparkles, X } from "lucide-react";
+import { ArrowDownUp, AudioLines, Globe2, Moon, Radio, Sparkles, Sun, X } from "lucide-react";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 
 import { Button } from "@/components/ui/button";
@@ -115,7 +115,7 @@ function SpeakerPanel({
             {incomingText && <span className="translation-tag">MOCK TRANSLATION</span>}
           </div>
           {incomingText ? (
-            <p aria-live="polite" className="incoming-copy animate-in fade-in duration-300">
+            <p key={incomingText} aria-live="polite" className="incoming-copy">
               {incomingText}
             </p>
           ) : (
@@ -153,6 +153,7 @@ function SpeakerPanel({
 }
 
 function Index() {
+  const [theme, setTheme] = useState<"light" | "dark">("light");
   const [languageA, setLanguageA] = useState("English");
   const [languageB, setLanguageB] = useState("Spanish");
   const [draftA, setDraftA] = useState("");
@@ -163,6 +164,11 @@ function Index() {
   const channelRef = useRef<RealtimeChannel | null>(null);
   const channelReadyRef = useRef(false);
   const pendingTypingRef = useRef(new Map<Speaker, string>());
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("theme-light", theme === "light");
+    return () => document.documentElement.classList.remove("theme-light");
+  }, [theme]);
 
   const sendTyping = useCallback(
     (channel: RealtimeChannel, sender: Speaker, text: string) => {
@@ -260,19 +266,19 @@ function Index() {
   };
 
   return (
-    <main className="conversation-backdrop min-h-screen px-4 py-5 text-foreground sm:px-8 sm:py-8">
+    <main className={`conversation-backdrop theme-${theme} min-h-screen px-4 py-5 text-foreground transition-colors duration-500 sm:px-8 sm:py-8`}>
       <div className="mx-auto flex min-h-[calc(100svh-2.5rem)] max-w-7xl flex-col sm:min-h-[calc(100svh-4rem)]">
-        <header className="flex flex-wrap items-center justify-between gap-4 pb-6 sm:pb-8">
-          <Link className="flex items-center gap-3" to="/" aria-label="CrossTalk home">
-            <span className="brand-mark grid size-10 place-items-center rounded-xl">
+        <header className="glass-toolbar mb-8 flex flex-wrap items-center justify-between gap-4 rounded-2xl border px-4 py-3 sm:px-5">
+          <Link className="group flex items-center gap-3" to="/" aria-label="CrossTalk home">
+            <span className="brand-mark grid size-10 place-items-center rounded-xl transition-transform duration-300 group-hover:rotate-6">
               <AudioLines className="size-5" />
             </span>
             <span className="text-[15px] font-semibold tracking-[0.02em]">crosstalk<span className="brand-period">.</span></span>
           </Link>
 
-          <div className="flex items-center gap-3">
-            <div className="room-status flex items-center gap-2 rounded-full border border-border/70 px-3 py-2 text-xs text-muted-foreground">
-              <span className="status-dot" />
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className={`room-status flex items-center gap-2 rounded-full border border-border/70 px-3 py-2 text-[10px] font-semibold tracking-[0.08em] sm:text-xs ${connectionStatus === "error" ? "status-error" : ""}`}>
+              <span className={`status-dot ${connectionStatus === "connecting" ? "is-connecting" : ""}`} />
               <span aria-live="polite">
                 {connectionStatus === "connected"
                   ? "LIVE BROADCAST"
@@ -281,23 +287,36 @@ function Index() {
                     : "CONNECTING…"}
               </span>
             </div>
-            <Button variant="outline" size="icon" aria-label="Swap languages" title="Swap languages" onClick={swapLanguages} className="size-10 rounded-full border-border/80 bg-background/50">
+            <Button
+              variant="outline"
+              size="icon"
+              aria-label={`Switch to ${theme === "light" ? "dark" : "light"} theme`}
+              title={`Switch to ${theme === "light" ? "dark" : "light"} theme`}
+              onClick={() => setTheme((current) => current === "light" ? "dark" : "light")}
+              className="size-10 rounded-full border-border/80 bg-background/50 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"
+            >
+              {theme === "light" ? <Moon className="size-4" /> : <Sun className="size-4" />}
+            </Button>
+            <Button variant="outline" size="icon" aria-label="Swap languages" title="Swap languages" onClick={swapLanguages} className="size-10 rounded-full border-border/80 bg-background/50 transition-all duration-300 hover:-translate-y-0.5 hover:rotate-180 hover:shadow-md">
               <ArrowDownUp className="size-4" />
             </Button>
           </div>
         </header>
 
-        <div className="mb-6 flex flex-wrap items-end justify-between gap-4 sm:mb-8">
-          <div>
+        <div className="page-intro mb-6 flex flex-wrap items-end justify-between gap-4 sm:mb-8">
+          <div className="animate-rise">
             <div className="mb-3 flex items-center gap-2 text-xs font-medium text-muted-foreground">
               <Radio className="size-3.5 text-primary" />
               <span>TWO SIDES · ONE CONVERSATION</span>
             </div>
             <h1 className="page-title">Say it like you mean it.</h1>
+            <p className="mt-3 max-w-xl text-sm leading-6 text-muted-foreground">
+              A little more understanding starts with being heard.
+            </p>
           </div>
-          <div className="flex items-center gap-2 rounded-lg border border-border/70 bg-card/40 px-3 py-2 text-xs text-muted-foreground">
+          <div className="preview-pill flex items-center gap-2 rounded-full border border-border/70 px-4 py-2.5 text-xs text-muted-foreground">
             <Sparkles className="size-3.5 text-primary" />
-            <span>Instant translation preview</span>
+            <span>Simulated translation preview</span>
           </div>
         </div>
 
@@ -309,7 +328,7 @@ function Index() {
           <span>{languageB}</span>
         </div>
 
-        <div className="conversation-grid grid flex-1 grid-cols-1 overflow-hidden rounded-2xl border border-border/80 bg-card/50 shadow-conversation md:grid-cols-2">
+        <div className="conversation-grid glass-frame grid flex-1 grid-cols-1 overflow-hidden rounded-2xl border border-border/80 shadow-conversation md:grid-cols-2">
           <SpeakerPanel
             side="a"
             name="User A"
@@ -340,8 +359,8 @@ function Index() {
           />
         </div>
 
-        <footer className="flex flex-wrap items-center justify-between gap-2 px-1 pt-4 text-[11px] text-muted-foreground/80">
-          <span>Both sides are ready.</span>
+        <footer className="flex flex-wrap items-center justify-between gap-2 px-1 pt-5 text-[11px] text-muted-foreground/80">
+          <span className="flex items-center gap-2"><span className="footer-sparkle"><Sparkles className="size-3" /></span> Made for conversations that matter.</span>
           <span>Typing is shared live, not saved · translations are simulated</span>
         </footer>
       </div>
