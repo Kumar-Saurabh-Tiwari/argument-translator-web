@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
-import { ArrowDownUp, AudioLines, Globe2, MessageSquareText, Radio, Sparkles } from "lucide-react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { ArrowDownUp, AudioLines, Globe2, Radio, Sparkles, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -124,7 +124,7 @@ function SpeakerPanel({
             <span className="text-xs text-muted-foreground">Translated into {side === "a" ? "their" : "your"} language</span>
             <Button variant="ghost" size="icon" aria-label={`Clear ${name}'s message`} title="Clear message" disabled={!draft} onClick={() => onDraftChange("")} className="size-8 rounded-full text-muted-foreground">
               <span className="sr-only">Clear message</span>
-              <MessageSquareText className="size-4" />
+              <X className="size-4" />
             </Button>
           </div>
         </div>
@@ -148,12 +148,12 @@ function Index() {
     <main className="conversation-backdrop min-h-screen px-4 py-5 text-foreground sm:px-8 sm:py-8">
       <div className="mx-auto flex min-h-[calc(100svh-2.5rem)] max-w-7xl flex-col sm:min-h-[calc(100svh-4rem)]">
         <header className="flex flex-wrap items-center justify-between gap-4 pb-6 sm:pb-8">
-          <a className="flex items-center gap-3" href="/" aria-label="CrossTalk home">
+          <Link className="flex items-center gap-3" to="/" aria-label="CrossTalk home">
             <span className="brand-mark grid size-10 place-items-center rounded-xl">
               <AudioLines className="size-5" />
             </span>
             <span className="text-[15px] font-semibold tracking-[0.02em]">crosstalk<span className="brand-period">.</span></span>
-          </a>
+          </Link>
 
           <div className="flex items-center gap-3">
             <div className="room-status flex items-center gap-2 rounded-full border border-border/70 px-3 py-2 text-xs text-muted-foreground">
