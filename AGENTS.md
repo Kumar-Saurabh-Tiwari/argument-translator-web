@@ -8,3 +8,5 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Keep the translation-room mockup frontend-only, with the preview formatter as a pure helper and speaker drafts/languages in local UI state, so this prototype never implies that messages are sent or translations are real.
