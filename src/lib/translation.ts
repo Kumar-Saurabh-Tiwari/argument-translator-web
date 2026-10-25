@@ -42,6 +42,14 @@ export function parseGroqTranslationResponse(payload: unknown): string {
   return translation;
 }
 
+export function resolveGroqModel(configuredModel: string | undefined): string {
+  if (!configuredModel || configuredModel === "llama-3.3-70b-versatile") {
+    return "openai/gpt-oss-120b";
+  }
+
+  return configuredModel;
+}
+
 export const translateText = createServerFn({ method: "POST" })
   .validator((input: unknown) => translationRequestSchema.parse(input))
   .handler(async ({ data }) => {
@@ -56,6 +64,7 @@ export const translateText = createServerFn({ method: "POST" })
 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 20_000);
+    const model = resolveGroqModel(process.env["GROQ_MODEL"]);
 
     try {
       const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -65,7 +74,7 @@ export const translateText = createServerFn({ method: "POST" })
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: process.env["GROQ_MODEL"] || "llama-3.3-70b-versatile",
+          model,
           temperature: 0.1,
           max_tokens: 700,
           messages: [
@@ -88,7 +97,7 @@ export const translateText = createServerFn({ method: "POST" })
         }
         if (response.status === 400 || response.status === 404) {
           throw new Error(
-            `Groq rejected the model or request (HTTP ${response.status}). Check GROQ_MODEL.`,
+            `Groq rejected model "${model}" or the request (HTTP ${response.status}). Check GROQ_MODEL.`,
           );
         }
         throw new Error(
