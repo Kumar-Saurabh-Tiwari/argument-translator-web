@@ -143,9 +143,10 @@ function SpeakerPanel({
   canRetryTranslation,
 }: SpeakerPanelProps) {
   const isTyping = draft.trim().length > 0;
+  const isActive = isTyping || incomingText.status === "translating";
 
   return (
-    <section className={`speaker-panel speaker-${side} flex min-h-0 flex-col`}>
+    <section className={`speaker-panel speaker-${side} flex min-h-0 flex-col ${isActive ? "is-live" : ""}`}>
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/70 px-4 py-3 sm:px-6">
         <div className="flex items-center gap-3">
           <div className="speaker-avatar grid size-11 shrink-0 place-items-center rounded-full text-sm font-semibold">
@@ -263,6 +264,7 @@ function isTranslationErrorPayload(payload: unknown): payload is TranslationErro
 
 function Index() {
   const [theme, setTheme] = useState<"light" | "dark">("light");
+  const [themeInitialized, setThemeInitialized] = useState(false);
   const [languageA, setLanguageA] = useState("English");
   const [languageB, setLanguageB] = useState("Spanish");
   const [draftA, setDraftA] = useState("");
@@ -293,9 +295,21 @@ function Index() {
     new Map<Speaker, TypingPayload>(),
   );
   useEffect(() => {
+    const savedTheme = window.localStorage.getItem("crosstalk-theme");
+    const initialTheme = savedTheme === "dark" ? "dark" : "light";
+    setTheme(initialTheme);
+    document.documentElement.classList.toggle("theme-light", initialTheme === "light");
+    setThemeInitialized(true);
+  }, []);
+
+  useEffect(() => {
+    if (!themeInitialized) return;
+
     document.documentElement.classList.toggle("theme-light", theme === "light");
+    window.localStorage.setItem("crosstalk-theme", theme);
+
     return () => document.documentElement.classList.remove("theme-light");
-  }, [theme]);
+  }, [theme, themeInitialized]);
 
   const scheduleTranslation = useCallback(
     (
@@ -662,7 +676,7 @@ function Index() {
           </Link>
 
           <div className="flex items-center gap-2 sm:gap-3">
-            <div className={`room-status flex items-center gap-2 rounded-full border border-border/70 px-3 py-2 text-[10px] font-semibold tracking-[0.08em] sm:text-xs ${connectionStatus === "error" ? "status-error" : ""}`}>
+            <div className={`room-status flex items-center gap-2 rounded-full border border-border/70 px-3 py-2 text-[10px] font-semibold tracking-[0.08em] sm:text-xs ${connectionStatus === "error" ? "status-error" : ""} ${connectionStatus === "connected" ? "status-live" : ""}`}>
               <span className={`status-dot ${connectionStatus === "connecting" ? "is-connecting" : ""}`} />
               <span aria-live="polite">
                 {connectionStatus === "connected"

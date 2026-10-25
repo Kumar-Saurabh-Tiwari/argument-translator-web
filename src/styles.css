@@ -216,6 +216,14 @@
     linear-gradient(145deg, oklch(0.98 0.018 225), oklch(0.96 0.025 285) 52%, oklch(0.98 0.025 80));
 }
 
+.theme-dark.conversation-backdrop {
+  background:
+    radial-gradient(ellipse at 8% 8%, oklch(0.48 0.1 198 / 18%), transparent 38%),
+    radial-gradient(ellipse at 94% 18%, oklch(0.45 0.1 300 / 12%), transparent 36%),
+    radial-gradient(ellipse at 76% 96%, oklch(0.48 0.11 48 / 9%), transparent 38%),
+    linear-gradient(145deg, oklch(0.16 0.018 255), oklch(0.13 0.018 265) 55%, oklch(0.16 0.018 245));
+}
+
 .glass-toolbar,
 .glass-frame {
   border-color: color-mix(in oklab, var(--border) 64%, white 36%);
@@ -240,7 +248,42 @@
   background:
     linear-gradient(135deg, color-mix(in oklab, white 26%, transparent), transparent 32%),
     color-mix(in oklab, var(--card) 46%, transparent);
-  animation: frame-in 850ms 120ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation: frame-in 900ms 100ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.theme-dark .glass-toolbar {
+  border-color: oklch(0.72 0.04 220 / 18%);
+  background:
+    linear-gradient(115deg, oklch(0.88 0.05 205 / 8%), transparent 45%),
+    oklch(0.22 0.025 255 / 72%);
+  box-shadow:
+    inset 0 1px 0 oklch(0.95 0.02 220 / 12%),
+    0 16px 42px -30px oklch(0.04 0.02 255 / 82%);
+}
+
+.theme-dark .glass-frame {
+  border-color: oklch(0.72 0.04 220 / 20%);
+  background:
+    linear-gradient(135deg, oklch(0.88 0.05 205 / 10%), transparent 34%),
+    linear-gradient(145deg, oklch(0.22 0.025 255 / 90%), oklch(0.17 0.02 255 / 94%));
+  box-shadow:
+    inset 0 1px 0 oklch(0.95 0.02 220 / 14%),
+    0 28px 80px -38px oklch(0.02 0.015 255 / 92%),
+    0 0 46px -34px oklch(0.76 0.13 194 / 40%);
+}
+
+.theme-dark .glass-frame::before {
+  background:
+    radial-gradient(ellipse at 12% 0%, oklch(0.76 0.13 194 / 14%), transparent 46%),
+    radial-gradient(ellipse at 88% 0%, oklch(0.72 0.16 28 / 11%), transparent 44%);
+}
+
+.theme-dark .glass-frame > .speaker-panel {
+  background-color: oklch(0.2 0.02 255 / 52%);
+}
+
+.theme-dark .glass-frame > .speaker-panel:hover {
+  background-color: oklch(0.24 0.025 255 / 68%);
 }
 
 .glass-frame::before {
@@ -267,11 +310,19 @@
 }
 
 .glass-frame > .speaker-a {
-  animation: panel-open-left 700ms 250ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation: panel-open-left 800ms 300ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 
 .glass-frame > .speaker-b {
-  animation: panel-open-right 700ms 250ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation: panel-open-right 800ms 420ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.glass-frame > .speaker-panel.is-live {
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--speaker-blue) 18%, transparent);
+}
+
+.glass-frame > .speaker-b.is-live {
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--speaker-red) 18%, transparent);
 }
 
 .glass-frame > .speaker-panel:hover {
@@ -380,6 +431,15 @@
   backdrop-filter: blur(12px);
 }
 
+.status-live {
+  border-color: oklch(0.75 0.15 155 / 28%);
+  box-shadow: inset 0 1px 0 oklch(0.95 0.02 155 / 8%), 0 0 20px -12px oklch(0.75 0.15 155 / 42%);
+}
+
+.status-live .status-dot {
+  animation: live-beacon 2s ease-in-out infinite;
+}
+
 .status-error {
   color: var(--destructive);
 }
@@ -397,6 +457,13 @@
   50% {
     opacity: 0.4;
     transform: scale(0.78);
+  }
+}
+
+@keyframes live-beacon {
+  50% {
+    box-shadow: 0 0 13px 3px oklch(0.75 0.15 155 / 45%);
+    transform: scale(1.18);
   }
 }
 
@@ -438,6 +505,18 @@
   background:
     radial-gradient(ellipse at 80% 0%, color-mix(in oklab, var(--speaker-red) 8%, transparent), transparent 58%),
     linear-gradient(155deg, color-mix(in oklab, white 75%, var(--speaker-red) 5%), color-mix(in oklab, var(--background) 80%, transparent));
+}
+
+.theme-dark .speaker-panel {
+  background:
+    radial-gradient(ellipse at 15% 0%, oklch(0.72 0.13 220 / 9%), transparent 58%),
+    linear-gradient(155deg, oklch(0.24 0.022 255 / 78%), oklch(0.17 0.016 255 / 94%));
+}
+
+.theme-dark .speaker-b {
+  background:
+    radial-gradient(ellipse at 85% 0%, oklch(0.73 0.16 28 / 8%), transparent 58%),
+    linear-gradient(155deg, oklch(0.24 0.022 255 / 78%), oklch(0.17 0.016 255 / 94%));
 }
 
 .speaker-avatar {
@@ -550,6 +629,16 @@
   transition: border-color 300ms ease, box-shadow 400ms ease, background-color 400ms ease, transform 350ms cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 
+.theme-dark .composer-surface {
+  border-color: oklch(0.72 0.04 220 / 16%);
+  background:
+    linear-gradient(130deg, oklch(0.9 0.04 220 / 5%), transparent 42%),
+    oklch(0.14 0.015 255 / 72%);
+  box-shadow:
+    inset 0 1px 0 oklch(0.95 0.02 220 / 10%),
+    0 16px 40px -30px oklch(0.02 0.015 255 / 90%);
+}
+
 .composer-surface:focus-within {
   transform: translateY(-3px) scale(1.005);
   box-shadow:
@@ -565,6 +654,26 @@
 .speaker-b .composer-active {
   border-color: color-mix(in oklab, var(--speaker-red) 72%, var(--border));
   box-shadow: 0 0 0 1px color-mix(in oklab, var(--speaker-red) 20%, transparent), 0 0 34px -18px color-mix(in oklab, var(--speaker-red) 72%, transparent);
+}
+
+.speaker-a.is-live .composer-surface {
+  animation: composer-live-blue 2.8s ease-in-out infinite;
+}
+
+.speaker-b.is-live .composer-surface {
+  animation: composer-live-red 2.8s ease-in-out infinite;
+}
+
+@keyframes composer-live-blue {
+  50% {
+    box-shadow: 0 0 0 1px oklch(0.72 0.13 220 / 28%), 0 0 30px -18px oklch(0.72 0.13 220 / 72%);
+  }
+}
+
+@keyframes composer-live-red {
+  50% {
+    box-shadow: 0 0 0 1px oklch(0.73 0.16 28 / 28%), 0 0 30px -18px oklch(0.73 0.16 28 / 72%);
+  }
 }
 
 .speaker-a .speaker-dot.is-live {
