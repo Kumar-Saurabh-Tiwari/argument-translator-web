@@ -145,8 +145,8 @@ function SpeakerPanel({
   const isTyping = draft.trim().length > 0;
 
   return (
-    <section className={`speaker-panel speaker-${side} flex min-h-[39rem] flex-col`}>
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border/70 px-5 py-5 sm:px-8">
+    <section className={`speaker-panel speaker-${side} flex min-h-0 flex-col`}>
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/70 px-4 py-3 sm:px-6">
         <div className="flex items-center gap-3">
           <div className="speaker-avatar grid size-11 shrink-0 place-items-center rounded-full text-sm font-semibold">
             {initials}
@@ -170,9 +170,9 @@ function SpeakerPanel({
         </Select>
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col justify-between gap-10 px-5 py-8 sm:px-8 sm:py-10">
+      <div className="flex min-h-0 flex-1 flex-col justify-between gap-4 px-4 py-4 sm:px-6 sm:py-5">
         <div className="flex flex-1 flex-col justify-center">
-          <div className="mb-7 flex items-center gap-2 text-[11px] font-medium tracking-[0.08em] text-muted-foreground">
+          <div className="mb-4 flex items-center gap-2 text-[11px] font-medium tracking-[0.08em] text-muted-foreground">
             <span className="speaker-signal inline-flex items-center gap-2">
               <AudioLines className="size-4" />
               <span>INCOMING FROM {incomingFrom.toUpperCase()}</span>
@@ -222,8 +222,8 @@ function SpeakerPanel({
           )}
         </div>
 
-        <div className={`composer-surface rounded-xl border p-4 transition-all duration-300 sm:p-5 ${isTyping ? "composer-active" : ""}`}>
-          <div className="mb-3 flex items-center justify-between">
+        <div className={`composer-surface rounded-xl border p-3 transition-all duration-300 sm:p-4 ${isTyping ? "composer-active" : ""}`}>
+          <div className="mb-2 flex items-center justify-between">
             <span className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
               <span className={`speaker-dot ${isTyping ? "is-live" : ""}`} />
               {isTyping ? "Speaking now" : "Your message"}
@@ -236,9 +236,9 @@ function SpeakerPanel({
             onChange={(event) => onDraftChange(event.target.value, language)}
             placeholder="Type what you want to say…"
             value={draft}
-            className="min-h-28 resize-none border-0 bg-transparent px-0 py-1 text-base leading-7 shadow-none placeholder:text-muted-foreground/70 focus-visible:ring-0 sm:text-lg"
+            className="min-h-20 resize-none border-0 bg-transparent px-0 py-1 text-sm leading-6 shadow-none placeholder:text-muted-foreground/70 focus-visible:ring-0 sm:text-base"
           />
-          <div className="mt-3 flex items-center justify-between border-t border-border/70 pt-3">
+          <div className="mt-2 flex items-center justify-between border-t border-border/70 pt-2">
             <span className="text-xs text-muted-foreground">
               Translated into {incomingText.sourceText ? incomingText.targetLanguage : language}
             </span>
@@ -651,9 +651,9 @@ function Index() {
   };
 
   return (
-    <main className={`conversation-backdrop theme-${theme} min-h-screen px-4 py-5 text-foreground transition-colors duration-500 sm:px-8 sm:py-8`}>
-      <div className="mx-auto flex min-h-[calc(100svh-2.5rem)] max-w-7xl flex-col sm:min-h-[calc(100svh-4rem)]">
-        <header className="glass-toolbar mb-8 flex flex-wrap items-center justify-between gap-4 rounded-2xl border px-4 py-3 sm:px-5">
+    <main className={`conversation-backdrop theme-${theme} min-h-screen px-4 py-4 text-foreground transition-colors duration-500 sm:px-8 sm:py-5`}>
+      <div className="mx-auto flex min-h-[calc(100svh-2rem)] max-w-7xl flex-col sm:min-h-[calc(100svh-2.5rem)]">
+        <header className="glass-toolbar mb-4 flex flex-wrap items-center justify-between gap-4 rounded-2xl border px-4 py-3 sm:px-5">
           <Link className="group flex items-center gap-3" to="/" aria-label="CrossTalk home">
             <span className="brand-mark grid size-10 place-items-center rounded-xl transition-transform duration-300 group-hover:rotate-6">
               <AudioLines className="size-5" />
@@ -688,7 +688,7 @@ function Index() {
           </div>
         </header>
 
-        <div className="page-intro mb-6 flex flex-wrap items-end justify-between gap-4 sm:mb-8">
+        <div className="page-intro mb-4 flex flex-wrap items-end justify-between gap-4 sm:mb-6">
           <div className="animate-rise">
             <div className="mb-3 flex items-center gap-2 text-xs font-medium text-muted-foreground">
               <Radio className="size-3.5 text-primary" />
@@ -705,7 +705,7 @@ function Index() {
           </div>
         </div>
 
-        <div className="language-flow mb-4 hidden items-center justify-center gap-3 text-xs text-muted-foreground sm:flex" aria-hidden="true">
+        <div className="language-flow mb-3 hidden items-center justify-center gap-3 text-xs text-muted-foreground sm:flex" aria-hidden="true">
           <span>{languageA}</span>
           <span className="flow-line" />
           <ArrowDownUp className="size-3.5" />
@@ -752,7 +752,7 @@ function Index() {
           />
         </div>
 
-        <footer className="flex flex-wrap items-center justify-between gap-2 px-1 pt-5 text-[11px] text-muted-foreground/80">
+        <footer className="flex flex-wrap items-center justify-between gap-2 px-1 pt-3 text-[11px] text-muted-foreground/80">
           <span className="flex items-center gap-2"><span className="footer-sparkle"><Sparkles className="size-3" /></span> Made for conversations that matter.</span>
           <span>Live typing via Supabase · text is sent to Groq after you pause typing</span>
         </footer>
